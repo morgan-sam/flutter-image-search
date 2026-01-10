@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'widgets/search_bar_widget.dart';
+import 'widgets/image_grid.dart';
+
 class ImageSearchPage extends ConsumerWidget {
   const ImageSearchPage({super.key});
 
@@ -11,8 +14,13 @@ class ImageSearchPage extends ConsumerWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Image Search'),
       ),
-      body: const Center(
-        child: Text('Image Search Page'),
+      body: const Column(
+        children: [
+          SearchBarWidget(),
+          Expanded(
+            child: ImageGrid(),
+          ),
+        ],
       ),
     );
   }

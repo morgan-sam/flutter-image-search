@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_image_search/core/responsive.dart';
 
 class ImageGrid extends StatelessWidget {
   const ImageGrid({super.key});
@@ -7,8 +8,8 @@ class ImageGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.builder(
       padding: const EdgeInsets.all(16.0),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: Responsive.getGridColumns(MediaQuery.of(context).size.width),
         crossAxisSpacing: 12.0,
         mainAxisSpacing: 12.0,
         childAspectRatio: 1.0,

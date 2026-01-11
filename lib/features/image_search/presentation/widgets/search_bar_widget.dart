@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
-import '../../data/image_api.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../image_search_controller.dart';
 
-class SearchBarWidget extends StatelessWidget {
-  SearchBarWidget({super.key});
+class SearchBarWidget extends ConsumerStatefulWidget {
+  const SearchBarWidget({super.key});
 
+  @override
+  ConsumerState<SearchBarWidget> createState() => _SearchBarWidgetState();
+}
+
+class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
   final TextEditingController _controller = TextEditingController();
-  final ImageApi _imageApi = ImageApi();
 
-  Future<void> _onSubmitted(String query) async {
-    if (query.trim().isEmpty) return;
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
-    try {
-      final results = await _imageApi.searchImages(query);
-      debugPrint('Search results for "$query":');
-      debugPrint(results.toString());
-    } catch (e) {
-      debugPrint('Error searching: $e');
-    }
+  void _onSubmitted(String query) {
+    ref.read(imageSearchControllerProvider.notifier).search(query);
   }
 
   @override

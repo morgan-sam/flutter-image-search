@@ -15,10 +15,10 @@ lib/
         │   ├── image_api.dart         # API client (HTTP calls)
         │   └── image_repository.dart  # Repository pattern (data abstraction)
         ├── domain/                    # Business logic layer
-        │   └── image_result.dart      # Domain model
+        │   ├── image_result.dart      # Domain model
+            └── image_search_controller.dart # State management
         └── presentation/              # UI layer
             ├── image_search_page.dart      # Main page (stateless)
-            ├── image_search_controller.dart # State management
             └── widgets/
                 ├── search_bar_widget.dart  # Search input with debounce
                 └── image_grid.dart         # Grid with infinite scroll

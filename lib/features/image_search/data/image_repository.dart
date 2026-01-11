@@ -1,3 +1,4 @@
+import '../domain/image_result.dart';
 import 'image_api.dart';
 
 class ImageRepository {
@@ -5,7 +6,11 @@ class ImageRepository {
 
   ImageRepository({ImageApi? api}) : _api = api ?? ImageApi();
 
-  Future<Map<String, dynamic>> searchImages(String query, {int page = 1, int perPage = 20}) {
-    return _api.searchImages(query, page: page, perPage: perPage);
+  Future<List<ImageResult>> searchImages(String query, {int page = 1, int perPage = 20}) async {
+    final response = await _api.searchImages(query, page: page, perPage: perPage);
+    final photos = response['photos'] as List<dynamic>;
+    return photos
+        .map((json) => ImageResult.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 }

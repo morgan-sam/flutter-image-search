@@ -14,10 +14,10 @@ class ImageSearchPage extends ConsumerWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Image Search'),
       ),
-      body: const Column(
+      body: Column(
         children: [
           SearchBarWidget(),
-          Expanded(
+          const Expanded(
             child: ImageGrid(),
           ),
         ],

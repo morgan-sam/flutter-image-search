@@ -7,8 +7,7 @@ A single-page image search application built with Flutter, demonstrating clean a
 lib/
 ├── main.dart                          # App entry point with ProviderScope
 ├── core/                              # Shared utilities
-│   ├── debounce.dart                  # Debounce utility for search optimization
-│   └── pagination.dart                # Pagination helpers
+│   ├── resposive.dart                 # Shared class for responsive helpers
 └── features/
     └── image_search/                  # Feature module
         ├── data/                      # Data layer

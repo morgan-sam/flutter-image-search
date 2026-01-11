@@ -31,10 +31,16 @@ lib/
 - Easy to scale to multiple features
 
 ### State Management
-- **Riverpod** for dependency injection and state
-- **StateNotifier** pattern for complex state
-- No setState - all state in controllers
-- UI components are stateless consumers
+- **Riverpod** for business logic state and dependency injection
+- **Flutter Hooks** for widget lifecycle management (UI controllers, effects)
+- **StateNotifier** pattern for complex business state
+- Clear separation: business logic in controllers, UI state in widgets
+- UI components are stateless (`ConsumerWidget`) or use hooks (`HookConsumerWidget`)
+
+### Widget State vs Business State
+- **Business State** (in controllers): search results, pagination, loading states
+- **UI State** (in widgets): scroll position, text input, animations
+- This separation ensures testable business logic independent of UI
 
 ### Data Flow
 ```

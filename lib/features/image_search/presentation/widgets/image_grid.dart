@@ -1,47 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_image_search/core/responsive.dart';
 import '../../domain/image_result.dart';
 import '../../domain/image_search_controller.dart';
 
-class ImageGrid extends ConsumerStatefulWidget {
+class ImageGrid extends HookConsumerWidget {
   const ImageGrid({super.key});
 
   @override
-  ConsumerState<ImageGrid> createState() => _ImageGridState();
-}
-
-class _ImageGridState extends ConsumerState<ImageGrid> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.position.pixels;
-    final threshold = maxScroll * 0.8;
-
-    if (currentScroll >= threshold) {
-      ref.read(imageSearchControllerProvider.notifier).loadMore();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(imageSearchControllerProvider);
+    final scrollController = useScrollController();
+    
+    useEffect(() {
+      void onScroll() {
+        if (!scrollController.hasClients) return;
+
+        final maxScroll = scrollController.position.maxScrollExtent;
+        final currentScroll = scrollController.position.pixels;
+        final threshold = maxScroll * 0.8;
+
+        if (currentScroll >= threshold && 
+            !state.isLoadingMore && 
+            state.hasMore) {
+          ref.read(imageSearchControllerProvider.notifier).loadMore();
+        }
+      }
+
+      scrollController.addListener(onScroll);
+      return () => scrollController.removeListener(onScroll);
+    }, [scrollController]);
 
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -85,28 +74,34 @@ class _ImageGridState extends ConsumerState<ImageGrid> {
       );
     }
 
-    return Column(
-      children: [
-        Expanded(
-          child: GridView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(16.0),
+    return CustomScrollView(
+      controller: scrollController,
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16.0),
+          sliver: SliverGrid(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: Responsive.getGridColumns(MediaQuery.of(context).size.width),
               crossAxisSpacing: 12.0,
               mainAxisSpacing: 12.0,
               childAspectRatio: 1.0,
             ),
-            itemCount: state.images.length,
-            itemBuilder: (context, index) {
-              return ImageCard(image: state.images[index]);
-            },
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                return ImageCard(image: state.images[index]);
+              },
+              childCount: state.images.length,
+            ),
           ),
         ),
         if (state.isLoadingMore)
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: CircularProgressIndicator(),
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
           ),
       ],
     );

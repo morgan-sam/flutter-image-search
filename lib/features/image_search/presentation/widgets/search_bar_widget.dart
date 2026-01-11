@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/image_search_controller.dart';
@@ -11,15 +12,22 @@ class SearchBarWidget extends ConsumerStatefulWidget {
 
 class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
   final TextEditingController _controller = TextEditingController();
+  Timer? _debounce;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _controller.dispose();
     super.dispose();
   }
 
-  void _onSubmitted(String query) {
-    ref.read(imageSearchControllerProvider.notifier).search(query);
+  void _onChanged(String query) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      if (query.trim().isNotEmpty) {
+        ref.read(imageSearchControllerProvider.notifier).search(query);
+      }
+    });
   }
 
   @override
@@ -28,7 +36,7 @@ class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
       padding: const EdgeInsets.all(16.0),
       child: TextField(
         controller: _controller,
-        onSubmitted: _onSubmitted,
+        onChanged: _onChanged,
         decoration: InputDecoration(
           hintText: 'Search images...',
           prefixIcon: const Icon(Icons.search),

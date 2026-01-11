@@ -76,6 +76,11 @@ class ImageSearchController extends StateNotifier<ImageSearchState> {
     }
   }
 
+  Future<void> retry() async {
+    if (state.query.isEmpty) return;
+    await search(state.query);
+  }
+
   Future<void> loadMore() async {
     if (state.isLoadingMore || !state.hasMore || state.query.isEmpty) return;
 

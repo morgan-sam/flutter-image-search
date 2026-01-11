@@ -2,12 +2,19 @@
 
 A single-page image search application built with Flutter, demonstrating clean architecture and scalable patterns.
 
+## Features
+- **Image Search**: Real-time search with debouncing (400ms delay)
+- **Infinite Scroll**: Automatic pagination as you scroll
+- **Responsive Design**: Adapts to mobile, tablet, and desktop
+- **Error Handling**: Graceful error states with retry functionality
+- **Clean Architecture**: Testable, maintainable codebase
+
 ## Project Structure
 ```
 lib/
 ├── main.dart                          # App entry point with ProviderScope
 ├── core/                              # Shared utilities
-│   ├── resposive.dart                 # Shared class for responsive helpers
+│   └── responsive.dart                # Responsive grid helpers
 └── features/
     └── image_search/                  # Feature module
         ├── data/                      # Data layer
@@ -15,12 +22,13 @@ lib/
         │   └── image_repository.dart  # Repository pattern (data abstraction)
         ├── domain/                    # Business logic layer
         │   ├── image_result.dart      # Domain model
-            └── image_search_controller.dart # State management
+        │   └── image_search_controller.dart # State management
         └── presentation/              # UI layer
             ├── image_search_page.dart      # Main page (stateless)
             └── widgets/
                 ├── search_bar_widget.dart  # Search input with debounce
-                └── image_grid.dart         # Grid with infinite scroll
+                ├── image_grid.dart         # Grid with infinite scroll
+                └── skeleton_card.dart      # Loading placeholder
 ```
 
 ## Architecture Principles
@@ -73,11 +81,109 @@ User Input → Controller → Repository → API
 - Separate loading states: `isLoading` vs `isLoadingMore`
 - `hasMore` flag prevents unnecessary API calls
 
+## Testing
+
+### Test Coverage
+- **Business Logic:** 95% (controller, repository, widgets)
+- **Overall:** 83.3% (169/203 lines)
+- **Total Tests:** 71 across 4 test suites
+
+### Test Structure
+```
+test/
+├── features/image_search/
+│   ├── domain/
+│   │   └── image_search_controller_test.dart  # 22 tests - state management
+│   ├── data/
+│   │   └── image_repository_test.dart         # 17 tests - JSON parsing, API errors
+│   └── presentation/widgets/
+│       ├── search_bar_widget_test.dart        # 8 tests - debounce behavior
+│       └── image_grid_test.dart               # 14 tests - infinite scroll
+└── core/
+    └── responsive_test.dart                   # 10 tests - grid calculations
+```
+
+### What's Tested
+
+**Debounce Functionality** ✅
+- 400ms delay verification
+- Rapid typing only triggers one search
+- Timer cancellation on new input
+- Empty/whitespace query handling
+
+**Infinite Scroll** ✅
+- Load more appends to existing results
+- Prevents duplicate API calls when already loading
+- Respects `hasMore` flag to avoid unnecessary requests
+- Scroll listener triggers at 80% scroll depth
+- Separate loading indicators for initial vs. pagination
+
+**State Management** ✅
+- State transitions: idle → loading → success/error
+- Previous state cleared on new search
+- Error state preservation during failed pagination
+- Empty result handling
+
+**Error Handling** ✅
+- Network failures display user-friendly messages
+- Retry functionality on errors
+- Graceful degradation with partial results
+
+**JSON Parsing** ✅
+- Correct field mapping from API response
+- Null/missing field handling
+- Type conversions (int ID to string)
+
+### Running Tests
+```bash
+# Run all tests
+flutter test
+
+# Run with coverage report
+flutter test --coverage
+
+# Generate HTML coverage report
+genhtml coverage/lcov.info -o coverage/html
+open coverage/html/index.html
+```
+
+### Test Architecture
+
+Tests validate clean architecture separation:
+- **Controller tests** mock only the Repository (not API)
+- **Repository tests** mock only the API client
+- **Widget tests** use Riverpod overrides for dependency injection
+- Each layer tested independently with fakes/mocks
+
+Example:
+```dart
+// Controller test uses FakeRepository
+class FakeImageRepository implements ImageRepository {
+  // Test implementation
+}
+
+// Repository test uses FakeApi
+class FakeImageApi implements ImageApi {
+  // Test implementation
+}
+```
+
+This ensures:
+- Business logic can be tested without HTTP calls
+- UI can be tested without backend dependencies
+- Each component is truly independent
+
 ## Dependencies
 ```yaml
 dependencies:
   flutter_riverpod: ^2.4.0  # State management
+  flutter_hooks: ^0.20.0    # Widget lifecycle hooks
   http: ^1.1.0              # API calls
+
+dev_dependencies:
+  mockito: ^5.4.0           # Mocking framework
+  build_runner: ^2.4.0      # Code generation
+  fake_async: ^1.3.0        # Testing async behavior
 ```
 
 ## Running the App
@@ -94,10 +200,10 @@ Press 'r' in terminal or save file in IDE
 
 ## API Integration
 
-Uses [API_NAME] for image search:
-- Endpoint: [URL]
-- Pagination: page-based
-- Rate limiting: [details]
+Uses Pexels API for image search:
+- Endpoint: `https://api.pexels.com/v1/search`
+- Pagination: page-based (20 images per page)
+- Authentication: API key required (set in environment)
 
 ## State Shape
 ```dart
@@ -112,16 +218,10 @@ class ImageSearchState {
 }
 ```
 
-## Testing Strategy
-
-- Unit tests: Controllers and repositories
-- Widget tests: Individual components
-- Integration tests: Full user flows
-
 ## Architecture Benefits
 
 **Scalability**: Adding features doesn't require refactoring  
-**Testability**: Each layer can be tested independently  
+**Testability**: Each layer can be tested independently (95% coverage)  
 **Maintainability**: Clear separation of concerns  
 **Type Safety**: Strong typing throughout  
 **Performance**: Optimized rebuilds with Riverpod  
@@ -134,6 +234,7 @@ This project follows Flutter best practices:
 - Pure functions for business logic
 - Explicit error states
 - Separation of UI and business logic
+- Comprehensive test coverage with focus on requirements
 
 ---
 

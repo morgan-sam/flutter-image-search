@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_image_search/core/responsive.dart';
 import '../../domain/image_result.dart';
 import '../../domain/image_search_controller.dart';
+import 'skeleton_card.dart';
 
 class ImageGrid extends HookConsumerWidget {
   const ImageGrid({super.key});
@@ -12,6 +13,12 @@ class ImageGrid extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(imageSearchControllerProvider);
     final scrollController = useScrollController();
+    
+    final screenWidth = MediaQuery.of(context).size.width;
+    final crossAxisCount = Responsive.getGridColumns(screenWidth);
+    final skeletonCount = state.isLoadingMore 
+      ? Responsive.calculateSkeletonCount(state.images.length, crossAxisCount)
+      : 0;
     
     useEffect(() {
       void onScroll() {
@@ -33,7 +40,17 @@ class ImageGrid extends HookConsumerWidget {
     }, [scrollController]);
 
     if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return GridView.builder(
+        padding: const EdgeInsets.all(16.0),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: 12.0,
+          mainAxisSpacing: 12.0,
+          childAspectRatio: 1.0,
+        ),
+        itemCount: 12,
+        itemBuilder: (context, index) => const SkeletonCard(),
+      );
     }
 
     if (state.error != null) {
@@ -81,28 +98,28 @@ class ImageGrid extends HookConsumerWidget {
           padding: const EdgeInsets.all(16.0),
           sliver: SliverGrid(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: Responsive.getGridColumns(MediaQuery.of(context).size.width),
+              crossAxisCount: crossAxisCount,
               crossAxisSpacing: 12.0,
               mainAxisSpacing: 12.0,
               childAspectRatio: 1.0,
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                return ImageCard(image: state.images[index]);
+                if (index < state.images.length) {
+                  return ImageCard(image: state.images[index]);
+                }
+                
+                final skeletonIndex = index - state.images.length;
+                if (state.isLoadingMore && skeletonIndex < skeletonCount) {
+                  return const SkeletonCard();
+                }
+                
+                return null;
               },
-              childCount: state.images.length,
+              childCount: state.images.length + skeletonCount,
             ),
           ),
         ),
-        if (state.isLoadingMore)
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-          ),
       ],
     );
   }

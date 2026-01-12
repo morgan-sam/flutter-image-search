@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_image_search/features/image_search/presentation/widgets/image_card.dart';
 import 'package:flutter_image_search/features/image_search/presentation/widgets/image_grid.dart';
 import 'package:flutter_image_search/features/image_search/domain/image_search_controller.dart';
 import 'package:flutter_image_search/features/image_search/domain/image_result.dart';

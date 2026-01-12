@@ -28,6 +28,7 @@ lib/
             └── widgets/
                 ├── search_bar_widget.dart  # Search input with debounce
                 ├── image_grid.dart         # Grid with infinite scroll
+                ├── image_card.dart         # Individual image card
                 └── skeleton_card.dart      # Loading placeholder
 ```
 
